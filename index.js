@@ -82,6 +82,8 @@ app.post('/article', function(req, res){
       console.log(result);
         res.json({message:"Artical was added"})
     })
+    connection.release();
+    console.log('connection released');
   })
 })
 // post articals ends here
@@ -96,6 +98,8 @@ app.get('/article', function(req, res){
       }
         res.send(rows)
     })
+    connection.release();
+    console.log('connection released');
   })
 })
 // get articles ends here
@@ -116,6 +120,8 @@ app.put('/article', function(req, res){
         res.json({message:"Something wrong happended"})
       }
     })
+    connection.release();
+    console.log('connection released');
   })
 })
 // update articles ends here
@@ -132,6 +138,8 @@ app.delete('/article', function(req, res){
         console.log(result);
         res.json({message:"Artical was deleted"})
     })
+    connection.release();
+    console.log('connection released');
   })
 })
 // delete articles ends here
@@ -160,8 +168,9 @@ app.post('/login', function(req, res){
            token: token
          })
        }
-
     })
+    connection.release();
+    console.log('connection released');
   })
 })
 // login API ends here
@@ -210,13 +219,50 @@ app.post('/singup', function(req, res) {
           })
         })
       }
-      connection.release();
     });
+    connection.release();
+    console.log('connection released');
   });
 });
 // singup ends here
 
+// forget password API starts here
+app.post('/forgetpwd', function(req, res){
+  pool.getConnection(function(err, connection) {
+    var query = "SELECT username, email, user_id FROM user WHERE username ='"+ req.body.username +"' OR email = '"+ req.body.email + "'";
+    connection.query(query, function(err, rows) {
+      if(err){
+        console.log(err);
+        res.send(err)
+      }
+      if(rows == 0){
+        res.json({message:'Invalid username or email'})
+      }else {
+        var userID = rows[0].user_id
 
+        // TODO: right function to generat password temp PWD
+        var tempPWD = "ZZZZZO00000"
+        query = "UPDATE user SET password = '" + tempPWD + "' WHERE user_id = " + userID;
+        connection.query(query, function(err, result) {
+         // TODO: send email to user
+            if(err){
+              console.log(err);
+              res.send(err)
+            }
+            console.log(result);
+            if(result.affectedRows != 0){
+              res.json({message:'New password was generated, please check your email'})
+            }else {
+              res.json({message:'Something went wrong, please try again later'})
+            }
+        })
+      }
+    })
+    connection.release();
+    console.log('connection released');
+  })
+})
+// forget password ends here
 
 
 app.listen(port);
