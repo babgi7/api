@@ -5,15 +5,17 @@ var port = process.env.PORT || 8080;
 var app        = express();
 var _    = require('underscore');
 var jwt = require('jsonwebtoken');
+var randomstring = require("randomstring");
+
 
 var router = express.Router();              // get an instance of the express Router
 
 var pool  = mysql.createPool({
   connectionLimit : 10,
-  host     : '',
-  user     : '',
-  password : '',
-  database : ''
+  host     : 'db.ungr.net',
+  user     : 'ungrnet_GameRec',
+  password : 'amjad1234',
+  database : 'ungrnet_GameRecycle'
 });
 
 
@@ -240,8 +242,8 @@ app.post('/forgetpwd', function(req, res){
       }else {
         var userID = rows[0].user_id
 
-        // TODO: right function to generat password temp PWD
-        var tempPWD = "ZZZZZO00000"
+    //function to generat temp password  PWD
+        var tempPWD = randomstring.generate(8);
         query = "UPDATE user SET password = '" + tempPWD + "' WHERE user_id = " + userID;
         connection.query(query, function(err, result) {
          // TODO: send email to user
@@ -263,6 +265,41 @@ app.post('/forgetpwd', function(req, res){
   })
 })
 // forget password ends here
+
+// DM API starts here
+app.post('/message', function(req, res){
+  pool.getConnection(function(err, connection) {
+    // get the id  of the person whos is logged in and want to message the article creater
+    var query = "INSERT INTO message (message_body, creator_id, parent_message_id, article_id) \
+    VALUES('"+req.body.message_body+"', (SELECT user_id FROM user WHERE username = 'salah'),\
+     '"+req.body.parent_message_id+"','"+req.body.article_id+"')";
+    connection.query(query, function(err, result) {
+      if (err) {
+        console.log(err);
+        res.send(err)
+      }
+      res.send(result)
+      if(result.affectedRows != 0){
+       query = "INSERT INTO message_recipient (recipient_id, message_id) \
+        VALUES((SELECT user_id FROM article WHERE article_id = 1), \
+        (SELECT message_id FROM message WHERE creator_id = 5))"
+        connection.query(query, function(err, rows){
+          if (err) {
+            console.log(err);
+            res.send(err)
+          }
+            res.send(rows)
+        })
+      }
+
+    })
+    connection.release();
+    console.log('connection released');
+  })
+})
+// DM API ends here
+
+
 
 
 app.listen(port);
