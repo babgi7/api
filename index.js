@@ -282,7 +282,7 @@ app.post('/message', function(req, res){
       if(result.affectedRows != 0){
        query = "INSERT INTO message_recipient (recipient_id, message_id) \
         VALUES((SELECT user_id FROM article WHERE article_id = 1), \
-        (SELECT message_id FROM message WHERE creator_id = 5))"
+        (SELECT message_id FROM message WHERE creator_id = 5 AND parent_message_id = 11))"
         connection.query(query, function(err, rows){
           if (err) {
             console.log(err);
