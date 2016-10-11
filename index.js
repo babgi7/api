@@ -12,10 +12,10 @@ var router = express.Router();              // get an instance of the express Ro
 
 var pool  = mysql.createPool({
   connectionLimit : 10,
-  host     : 'db.ungr.net',
-  user     : 'ungrnet_GameRec',
-  password : 'amjad1234',
-  database : 'ungrnet_GameRecycle'
+  host     : '',
+  user     : '',
+  password : '',
+  database : ''
 });
 
 
